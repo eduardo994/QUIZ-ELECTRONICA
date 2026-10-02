@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz – Examen Teórico · Electrónica de Estado Sólido</title>
+<style>
+  :root{
+    --accent:#038BFF; --accent-d:#0270cc; --accent-l:#e6f3ff;
+    --ok:#16a34a; --ok-l:#e8f7ee; --bad:#dc2626; --bad-l:#fdecec;
+    --warn:#b45309; --warn-l:#fff6e5;
+    --ink:#1b2430; --muted:#5b6675; --line:#dfe5ec; --bg:#f5f7fa; --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  .wrap{max-width:780px;margin:0 auto;padding:20px 16px 40px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;box-shadow:0 2px 10px rgba(16,24,40,.05)}
+  h1{font-size:1.55rem;margin:0 0 4px}
+  h2{font-size:1.15rem;margin:0}
+  .sub{color:var(--muted);margin:0 0 18px}
+  .btn{appearance:none;border:0;border-radius:10px;padding:12px 22px;font-size:1rem;font-weight:600;cursor:pointer;background:var(--accent);color:#fff;transition:background .15s,transform .05s}
+  .btn:hover{background:var(--accent-d)}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{background:#b9c3cf;cursor:not-allowed}
+  .btn.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+  .btn.ghost:hover{background:var(--accent-l)}
+  /* Inicio */
+  .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:18px 0}
+  .rule{background:var(--bg);border-radius:10px;padding:14px;font-size:.93rem}
+  .rule b{display:block;margin-bottom:2px}
+  .field{margin:14px 0}
+  .field label{display:block;font-weight:600;margin-bottom:6px;font-size:.95rem}
+  .field input[type=text]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;font-size:1rem}
+  .field input[type=text]:focus{outline:2px solid var(--accent);border-color:transparent}
+  .check{display:flex;gap:8px;align-items:center;font-size:.95rem;color:var(--muted)}
+  table.pts{width:100%;border-collapse:collapse;font-size:.92rem;margin-top:6px}
+  table.pts td{padding:6px 8px;border-bottom:1px solid var(--line)}
+  table.pts td:last-child{text-align:right;font-weight:600}
+  /* Barra superior */
+  .top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .chip{display:inline-block;background:var(--accent-l);color:var(--accent-d);font-weight:600;font-size:.8rem;padding:4px 10px;border-radius:999px}
+  .stats{display:flex;gap:14px;font-size:.88rem;color:var(--muted)}
+  .stats b{color:var(--ink)}
+  .bar{height:8px;background:var(--line);border-radius:999px;overflow:hidden;margin-bottom:18px}
+  .bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .qnum{color:var(--muted);font-size:.9rem;font-weight:600;margin-bottom:6px}
+  .qtext{font-size:1.15rem;font-weight:600;margin:0 0 18px}
+  /* Opciones */
+  .opts{display:flex;flex-direction:column;gap:10px}
+  .opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;background:#fff;border:2px solid var(--line);border-radius:11px;padding:12px 14px;font-size:1rem;color:var(--ink);cursor:pointer;transition:border-color .15s,background .15s}
+  .opt:hover:not(:disabled){border-color:var(--accent);background:var(--accent-l)}
+  .opt .k{flex:0 0 28px;height:28px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;color:var(--muted)}
+  .opt.wrong{border-color:var(--bad);background:var(--bad-l);color:#7a1d1d;cursor:not-allowed;text-decoration:line-through;text-decoration-color:rgba(220,38,38,.5)}
+  .opt.wrong .k{background:var(--bad);color:#fff}
+  .opt.right{border-color:var(--ok);background:var(--ok-l)}
+  .opt.right .k{background:var(--ok);color:#fff}
+  .opt:disabled:not(.wrong):not(.right){opacity:.55;cursor:default}
+  .shake{animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  /* Retroalimentación */
+  .fb{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+  .box{border-radius:10px;padding:12px 14px;font-size:.95rem;border-left:5px solid}
+  .box .t{font-weight:700;display:block;margin-bottom:2px}
+  .hint1{background:var(--warn-l);border-color:#f59e0b}
+  .hint2{background:#fff0e0;border-color:#ea580c}
+  .hint3{background:var(--bg);border-color:#94a3b8}
+  .okbox{background:var(--ok-l);border-color:var(--ok)}
+  .pop{animation:pop .25s ease-out}
+  @keyframes pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .nav{display:flex;justify-content:flex-end;margin-top:18px}
+  .kbd{font-size:.8rem;color:var(--muted);margin-top:10px;text-align:right}
+  /* Resultados */
+  .res-head{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+  .ring{position:relative;width:150px;height:150px;flex:0 0 150px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring .val b{font-size:2.4rem;line-height:1}
+  .ring .val span{font-size:.8rem;color:var(--muted)}
+  .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:20px 0}
+  .kpi{background:var(--bg);border-radius:10px;padding:12px}
+  .kpi b{display:block;font-size:1.35rem}
+  .kpi span{font-size:.82rem;color:var(--muted)}
+  .topic{margin:10px 0}
+  .topic .row{display:flex;justify-content:space-between;font-size:.92rem;margin-bottom:4px}
+  .topic .bar{margin-bottom:0}
+  .review{margin-top:18px}
+  .review details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px;background:#fff}
+  .review summary{cursor:pointer;font-weight:600;font-size:.95rem}
+  .review p{margin:8px 0 0;font-size:.92rem}
+  .tag{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:6px;white-space:nowrap}
+  .tag.t2{background:var(--warn-l);color:var(--warn)}
+  .tag.t3{background:var(--bad-l);color:var(--bad)}
+  .stamp{font-size:.85rem;color:var(--muted);margin-top:14px;border-top:1px dashed var(--line);padding-top:10px}
+  .hidden{display:none!important}
+  .pass{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border-radius:12px;padding:18px 20px;margin-bottom:20px;text-align:center;animation:pop .4s ease-out}
+  .pass b{display:block;font-size:1.6rem;letter-spacing:.5px}
+  .pass span{font-size:.95rem;opacity:.95}
+  .nopass{background:#fff6e5;color:#7a4a00;border:1px solid #f5c26b;border-radius:12px;padding:14px 18px;margin-bottom:20px;text-align:center}
+  .nopass b{display:block;font-size:1.15rem}
+  sub{font-size:.72em}
+  @media (max-width:520px){
+    .card{padding:18px}
+    .qtext{font-size:1.05rem}
+    .ring{margin:0 auto}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- PANTALLA DE INICIO -->
+  <section id="start" class="card">
+    <span class="chip">Electrónica de Estado Sólido</span>
+    <h1 style="margin-top:10px">Quiz – Examen Teórico</h1>
+    <p class="sub">25 preguntas · Dispositivos semiconductores, aplicaciones y zonas de operación del BJT</p>
+
+    <div class="rules">
+      <div class="rule"><b>✅ Avanza acertando</b>Solo pasas a la siguiente pregunta cuando eliges la respuesta correcta.</div>
+      <div class="rule"><b>💡 Pista 1</b>Aparece en tu primer intento incorrecto.</div>
+      <div class="rule"><b>🔎 Pista 2</b>Si vuelves a fallar, recibes una pista más directa.</div>
+    </div>
+
+    <b style="font-size:.95rem">Puntaje por pregunta</b>
+    <table class="pts">
+      <tr><td>Correcta al 1.<sup>er</sup> intento</td><td>100 %</td></tr>
+      <tr><td>Correcta al 2.º intento</td><td>50 %</td></tr>
+      <tr><td>Correcta al 3.<sup>er</sup> intento</td><td>25 %</td></tr>
+      <tr><td>Correcta al 4.º intento</td><td>0 %</td></tr>
+    </table>
+    <p class="sub" style="margin-top:8px;font-size:.88rem">La nota final es el promedio de todas las preguntas, en escala de 0 a 100.</p>
+
+    <div class="field">
+      <label for="name">Nombre completo</label>
+      <input type="text" id="name" placeholder="Escribe tu nombre (aparecerá en el reporte final)" autocomplete="name">
+    </div>
+    <label class="check"><input type="checkbox" id="shuffleQ"> Mezclar el orden de las preguntas</label>
+
+    <div class="nav"><button class="btn" id="btnStart">Comenzar ▶</button></div>
+  </section>
+
+  <!-- PANTALLA DE PREGUNTA -->
+  <section id="quiz" class="card hidden" aria-live="polite">
+    <div class="top">
+      <span class="chip" id="topicChip"></span>
+      <div class="stats">
+        <span>Aciertos al 1.<sup>er</sup> intento: <b id="sFirst">0</b></span>
+        <span>Puntos: <b id="sPts">0</b></span>
+      </div>
+    </div>
+    <div class="bar"><i id="prog"></i></div>
+    <div class="qnum" id="qnum"></div>
+    <p class="qtext" id="qtext"></p>
+    <div class="opts" id="opts"></div>
+    <div class="fb" id="fb"></div>
+    <div class="nav"><button class="btn" id="btnNext" disabled>Siguiente ▶</button></div>
+    <div class="kbd">Atajos: teclas A–D o 1–4 para responder · Enter para avanzar</div>
+  </section>
+
+  <!-- PANTALLA DE RESULTADOS -->
+  <section id="result" class="card hidden">
+    <div id="passBanner"></div>
+    <div class="res-head">
+      <div class="ring">
+        <svg width="150" height="150" viewBox="0 0 150 150">
+          <circle cx="75" cy="75" r="64" fill="none" stroke="#dfe5ec" stroke-width="14"/>
+          <circle id="ringArc" cx="75" cy="75" r="64" fill="none" stroke="#038BFF" stroke-width="14" stroke-linecap="round" stroke-dasharray="402.1" stroke-dashoffset="402.1" style="transition:stroke-dashoffset 1s ease"/>
+        </svg>
+        <div class="val"><b id="finalScore">0</b><span>de 100</span></div>
+      </div>
+      <div>
+        <h2 id="verdict"></h2>
+        <p class="sub" id="verdictTxt" style="margin-top:6px"></p>
+      </div>
+    </div>
+
+    <div class="grid4">
+      <div class="kpi"><b id="kFirst">0</b><span>correctas al 1.<sup>er</sup> intento</span></div>
+      <div class="kpi"><b id="kErr">0</b><span>intentos incorrectos</span></div>
+      <div class="kpi"><b id="kHard">0</b><span>preguntas con 3 o más intentos</span></div>
+      <div class="kpi"><b id="kTime">0:00</b><span>tiempo total</span></div>
+    </div>
+
+    <h2>Desempeño por tema</h2>
+    <div id="topics"></div>
+
+    <div class="review">
+      <h2 style="margin-bottom:10px">Repasa estas preguntas</h2>
+      <div id="reviewList"></div>
+    </div>
+
+    <div class="stamp" id="stamp"></div>
+    <div class="nav" style="gap:10px"><button class="btn ghost" id="btnRetry">↺ Reintentar</button></div>
+  </section>
+
+</div>
+
+<script>
+/* =========================================================
+   BANCO DE PREGUNTAS
+   Formato: [tema, pregunta, [CORRECTA, incorrecta, incorrecta, incorrecta], pista1, pista2, explicación]
+   La opción correcta SIEMPRE va primero aquí; el orden se mezcla al mostrarla.
+   Notación: V_{CE} → V con subíndice CE; I_C → I con subíndice C.
+   ========================================================= */
+var T1="Semiconductores y diodos", T2="Dispositivos y aplicaciones", T3="BJT: zonas de operación", T4="BJT: polarización y recta de carga";
+var BANK=[
+ [
+  "Dispositivos y aplicaciones",
+  "¿En qué aplicación industrial destaca el transistor de potencia IGBT?",
+  [
+   "Como componente principal en variadores industriales que controlan motores de cientos de kW.",
+   "En etapas de preamplificación de audio de muy baja señal.",
+   "En circuitos integrados con millones de compuertas lógicas digitales.",
+   "Como diodo rectificador de baja tensión en fuentes conmutadas de computadoras."
+  ],
+  "Considera los requerimientos de manejo de potencia en el control de motores industriales grandes.",
+  "IGBT = transistor bipolar de compuerta aislada: alta tensión, alta corriente y conmutación eficiente. Piensa en un VFD.",
+  "El IGBT combina alta capacidad de corriente con conmutación eficiente, ideal para manejar grandes cargas industriales."
+ ],
+ [
+  "Dispositivos y aplicaciones",
+  "¿Cuál es la función de un TRIAC usado como interruptor en un circuito de corriente alterna (AC)?",
+  [
+   "Conectar o desconectar la carga de AC al recibir un pulso en la compuerta, sin contactos mecánicos",
+   "Convertir la corriente alterna en corriente continua para la carga",
+   "Elevar la tensión de la red para alimentar cargas de mayor potencia",
+   "Filtrar el ruido eléctrico de la red de alimentación"
+  ],
+  "Compáralo con la función de un contactor o un relé, pero sin partes móviles.",
+  "Es un interruptor de estado sólido: conduce cuando recibe disparo en la compuerta y deja de conducir cuando la corriente pasa por cero.",
+  "El TRIAC actúa como un interruptor estático de AC: enciende la carga con una pequeña señal de compuerta, sin arco ni desgaste de contactos."
+ ],
+ [
+  "Dispositivos y aplicaciones",
+  "Un TRIAC que actúa como interruptor de una carga de AC deja de recibir pulsos en la compuerta. ¿Cuándo se apaga y desconecta la carga?",
+  [
+   "En el siguiente cruce por cero de la corriente de AC",
+   "Inmediatamente, en el instante en que se retira el pulso",
+   "Nunca: queda conduciendo de forma permanente",
+   "Solo cuando se desconecta la alimentación de la red"
+  ],
+  "Una vez disparado, el TRIAC mantiene la conducción aunque desaparezca el pulso de compuerta.",
+  "En AC la corriente pasa por cero dos veces por ciclo; en ese momento el TRIAC pierde la conducción.",
+  "Al pasar la corriente por cero (cada 8,33 ms a 60 Hz) el TRIAC se apaga; si ya no recibe pulsos, la carga queda desconectada."
+ ],
+ [
+  "Dispositivos y aplicaciones",
+  "¿Por qué un TRIAC puede usarse como interruptor de una carga de AC (lámpara, resistencia calefactora o ventilador)?",
+  [
+   "Conduce en ambos sentidos, así deja pasar los dos semiciclos de la onda",
+   "Solo funciona con corriente continua",
+   "No necesita ninguna señal en la compuerta para conducir",
+   "Convierte la AC de la red en DC para la carga"
+  ],
+  "Piensa en la dirección en que circula la corriente en una carga de AC.",
+  "El TRIAC tiene dos terminales principales (MT1 y MT2) y puede dispararse tanto en el semiciclo positivo como en el negativo.",
+  "Al ser bidireccional, un solo TRIAC conmuta los dos semiciclos; por eso es la base de los relés de estado sólido (SSR) que reemplazan contactos mecánicos."
+ ],
+ [
+  "Dispositivos y aplicaciones",
+  "¿Cuál es la función principal de la rectificación de potencia en variadores de frecuencia y fuentes industriales?",
+  [
+   "Convertir corriente alterna (AC) en corriente continua (DC).",
+   "Convertir DC en AC.",
+   "Filtrar ruido electromagnético con filtros inductivos pasivos.",
+   "Elevar la frecuencia de línea de 60 Hz a 120 Hz para motores."
+  ],
+  "Considera la transformación que ocurre al ingresar la energía de la red al equipo.",
+  "La red entrega AC; el bus interno de un VFD es DC. ¿Qué hace la etapa de entrada?",
+  "Los rectificadores aprovechan la conducción unidireccional de los diodos para convertir la senoidal en continua."
+ ],
+ [
+  "Dispositivos y aplicaciones",
+  "¿Qué componente contiene internamente «millones de transistores en un solo chip»?",
+  [
+   "El circuito integrado.",
+   "El diodo Schottky de potencia.",
+   "El diodo Zener de potencia.",
+   "El puente rectificador de onda completa."
+  ],
+  "Piensa en el chip que funciona como microprocesador o memoria.",
+  "Microprocesadores, memorias y amplificadores operacionales son todos este tipo de componente.",
+  "Un circuito integrado empaqueta millones de transistores y otros componentes en un sustrato de silicio."
+ ],
+ [
+  "Dispositivos y aplicaciones",
+  "¿En qué modo de operación trabaja un diodo Zener cuando se usa como regulador de tensión de referencia?",
+  [
+   "En la zona de ruptura controlada (avalancha) en polarización inversa.",
+   "En la región de conducción directa con V_D = 0,7 V.",
+   "En la zona de corte, como interruptor abierto sin corriente.",
+   "En la región de saturación con resistencia interna de cero ohmios."
+  ],
+  "Piensa en qué zona de la curva I-V el voltaje permanece fijo aunque varíe la corriente.",
+  "El Zener trabaja en inversa, justo en la región de ruptura (V_Z), donde la tensión casi no cambia.",
+  "El Zener está diseñado para operar de forma segura en la región de ruptura inversa, manteniendo la tensión casi constante."
+ ],
+ [
+  "Dispositivos y aplicaciones",
+  "Un circuito incluye un diodo de rueda libre en paralelo con la bobina de un relé. ¿Cuál es su función práctica?",
+  [
+   "Disipar la sobretensión inductiva que se genera al desconectar la bobina.",
+   "Aumentar la velocidad de activación magnética del relé.",
+   "Rectificar la corriente continua de entrada para convertirla en alterna.",
+   "Reducir el consumo de la fuente en estado permanente."
+  ],
+  "Considera el pico de alto voltaje que produce un inductor cuando se interrumpe de golpe su corriente.",
+  "v = L·di/dt: si la corriente cae de golpe aparece un pico enorme. El diodo le da un camino para recircular.",
+  "Al cortar la corriente de la bobina se genera un pico inverso que el diodo recircula y disipa de forma segura, protegiendo al transistor o contacto."
+ ],
+ [
+  "Dispositivos y aplicaciones",
+  "En un vehículo recreativo se quiere cargar una batería auxiliar desde el alternador sin que se descargue hacia la batería de arranque. ¿Qué solución resuelve el problema?",
+  [
+   "Instalar un diodo aislador en serie que permita la carga pero bloquee la descarga inversa.",
+   "Conectar una resistencia limitadora de 1 kΩ entre ambas baterías.",
+   "Usar un diodo Zener de 12 V en paralelo con la batería de arranque.",
+   "Colocar un fusible térmico auto-rearmable entre ambos positivos."
+  ],
+  "Piensa en un semiconductor que actúe como válvula unidireccional entre fuentes.",
+  "La corriente solo debe ir del alternador hacia la batería auxiliar, nunca de regreso. ¿Qué componente hace eso por sí solo?",
+  "El diodo aislador conduce solo cuando el alternador suministra carga y bloquea el retorno al quedar en inversa."
+ ],
+ [
+  "Dispositivos y aplicaciones",
+  "Un LED rojo (V_F = 2 V, I_F = 20 mA) se alimenta desde una fuente de 12 V. ¿Qué resistencia limitadora necesita?",
+  [
+   "500 Ω (en la práctica, 470 Ω o 510 Ω comercial)",
+   "600 Ω",
+   "100 Ω",
+   "50 Ω"
+  ],
+  "La resistencia debe absorber la diferencia entre la tensión de la fuente y la caída del LED.",
+  "R = (V_S − V_F) / I_F = (12 − 2) V / 20 mA.",
+  "R = 10 V / 20 mA = 500 Ω. Distractor 600 Ω: olvidar la caída del LED (12 V / 20 mA)."
+ ],
+ [
+  "Dispositivos y aplicaciones",
+  "En un puente rectificador de onda completa con diodos de silicio, ¿cuántos diodos conducen en cada semiciclo y qué caída total introducen?",
+  [
+   "Dos diodos en serie: ≈ 1,4 V",
+   "Un diodo: ≈ 0,7 V",
+   "Los cuatro diodos: ≈ 2,8 V",
+   "Ninguno; la corriente pasa solo por el transformador"
+  ],
+  "Sigue el camino de la corriente desde el secundario, a través de la carga, y de regreso.",
+  "En cada semiciclo la corriente atraviesa un diodo de ida y otro de regreso.",
+  "En cada semiciclo conducen dos diodos en serie con la carga, así que la salida pico es V_p − 1,4 V."
+ ],
+ [
+  "Dispositivos y aplicaciones",
+  "¿Por qué se prefieren los diodos Schottky en la salida de fuentes conmutadas (SMPS) de baja tensión?",
+  [
+   "Tienen baja caída directa (≈ 0,2–0,4 V) y conmutan muy rápido",
+   "Soportan miles de voltios en inversa",
+   "Emiten luz al conducir",
+   "Solo funcionan en polarización inversa"
+  ],
+  "Piensa en las pérdidas de conducción y en la alta frecuencia de conmutación de una SMPS.",
+  "Su unión metal-semiconductor no almacena portadores minoritarios y tiene menor V_F que un diodo de silicio.",
+  "Menor V_F reduce las pérdidas (P = V_F·I) y la ausencia de recuperación inversa lenta permite conmutar a alta frecuencia."
+ ],
+ [
+  "Dispositivos y aplicaciones",
+  "¿Cuál es la función principal de un optoacoplador entre un PLC o microcontrolador y una etapa de potencia?",
+  [
+   "Aislar galvánicamente ambos circuitos transmitiendo la señal por luz",
+   "Amplificar la corriente de la carga",
+   "Rectificar la tensión AC de la red",
+   "Regular la tensión de alimentación del control"
+  ],
+  "Piensa en proteger el circuito de control frente a ruido y sobretensiones del lado de potencia.",
+  "Contiene un LED y un fototransistor en el mismo encapsulado, sin conexión eléctrica entre ellos.",
+  "La señal cruza como luz: los dos lados quedan eléctricamente aislados, con tierras independientes."
+ ],
+ [
+  "Dispositivos y aplicaciones",
+  "¿Qué diferencia principal tiene un MOSFET frente a un BJT al usarlo como interruptor?",
+  [
+   "Se controla por tensión en la compuerta, con corriente de entrada casi nula",
+   "Se controla por corriente de base, igual que el BJT",
+   "No puede conmutar cargas de DC",
+   "Solo puede operar en zona activa"
+  ],
+  "Compara qué magnitud de entrada controla cada dispositivo.",
+  "La compuerta está aislada por una capa de óxido: en DC prácticamente no circula corriente por ella.",
+  "El BJT necesita I_B (control por corriente); el MOSFET se controla con V_GS, lo que simplifica el manejo desde un microcontrolador."
+ ],
+ [
+  "Dispositivos y aplicaciones",
+  "¿Cuál es la función general del transistor BJT dentro de los semiconductores?",
+  [
+   "Amplificar señales y actuar como interruptor controlado.",
+   "Rectificar únicamente señales AC de alto voltaje.",
+   "Almacenar datos digitales sin energía externa.",
+   "Producir luz visible a través de su encapsulado."
+  ],
+  "Busca la doble capacidad que define al BJT en circuitos analógicos y digitales.",
+  "En zona activa hace una cosa; en corte/saturación, otra. La respuesta incluye ambas.",
+  "El BJT amplifica en zona activa y conmuta en corte/saturación."
+ ],
+ [
+  "BJT: zonas de operación",
+  "¿Cuáles son las condiciones de polarización de las uniones Base-Emisor (B-E) y Base-Colector (B-C) para que un BJT opere en la zona de corte?",
+  [
+   "Ambas uniones (B-E y B-C) en inversa.",
+   "B-E en directa y B-C en inversa.",
+   "Ambas uniones (B-E y B-C) en directa.",
+   "B-E en inversa y B-C en directa."
+  ],
+  "Recuerda el estado en que el transistor se bloquea por completo.",
+  "Corte = ninguna unión conduce.",
+  "Con ambas uniones en inversa (o V_{BE} bajo el umbral) no hay inyección de portadores y el BJT no conduce."
+ ],
+ [
+  "BJT: zonas de operación",
+  "En corte, ¿a qué equivale la trayectoria Colector-Emisor de un BJT?",
+  [
+   "A un interruptor abierto, con I_C ≈ 0.",
+   "A un interruptor cerrado con 0 Ω.",
+   "A una fuente de corriente proporcional a I_B.",
+   "A un diodo Zener conduciendo en avalancha."
+  ],
+  "Piensa en el estado lógico OFF de un conmutador.",
+  "Si I_C ≈ 0 y V_{CE} ≈ V_{CC}, ¿qué tipo de interruptor es?",
+  "En corte, la corriente de colector es prácticamente nula y V_{CE} se aproxima a V_{CC}."
+ ],
+ [
+  "BJT: zonas de operación",
+  "¿Cuáles son las condiciones de polarización para que un BJT esté en la zona de saturación?",
+  [
+   "Ambas uniones (B-E y B-C) en directa.",
+   "B-E en inversa y B-C en directa.",
+   "Ambas uniones (B-E y B-C) en inversa.",
+   "B-E en directa y B-C en inversa."
+  ],
+  "Identifica la condición en la que el transistor conduce al máximo.",
+  "La saturación es lo opuesto al corte.",
+  "En saturación ambas uniones están en directa y circula la máxima I_C que permite el circuito externo."
+ ],
+ [
+  "BJT: zonas de operación",
+  "Cuando un BJT entra en saturación profunda, ¿qué ocurre con la relación I_C = β·I_B?",
+  [
+   "Se pierde la relación lineal: aumentar más I_B ya no incrementa I_C.",
+   "La relación se mantiene y I_C crece indefinidamente.",
+   "La ganancia β aumenta exponencialmente por sobrecalentamiento.",
+   "I_C cae inmediatamente a cero."
+  ],
+  "Considera qué pasa con la corriente de salida cuando el circuito externo impone un límite.",
+  "En saturación manda la malla externa: I_{C(sat)} ≈ V_{CC}/R_C. Por más base que inyectes, ya no sube.",
+  "Al alcanzar I_{C(sat)}, incrementos adicionales de base no aumentan la corriente de colector."
+ ],
+ [
+  "BJT: zonas de operación",
+  "En saturación, ¿a qué valor aproximado cae V_{CE} en un BJT de silicio?",
+  [
+   "A un valor muy pequeño, típicamente ≈0,2 V.",
+   "Aproximadamente a V_{CC}.",
+   "Exactamente a 0,7 V.",
+   "A V_{CC}/2."
+  ],
+  "Piensa en la tensión residual de un interruptor cerrado casi ideal.",
+  "V_{CE(sat)} es menor que una caída de diodo: apenas unas décimas de voltio.",
+  "Como interruptor cerrado, la caída colector-emisor se reduce a V_{CE(sat)} ≈ 0,2 V."
+ ],
+ [
+  "BJT: zonas de operación",
+  "¿Qué polarización requiere la zona activa de un BJT y cuál es su aplicación básica?",
+  [
+   "B-E en directa y B-C en inversa; se usa para amplificación lineal.",
+   "Ambas uniones en directa; se usa como conmutador ON.",
+   "Ambas uniones en inversa; se usa para rectificación de potencia.",
+   "B-E en inversa y B-C en directa; se usa como regulador Zener."
+  ],
+  "Asocia la zona lineal de control de corriente con la amplificación.",
+  "Es una combinación mixta: una unión conduce y la otra no. La B-E siempre debe estar encendida.",
+  "Esta polarización permite I_C = β·I_B, la base de toda etapa de amplificación lineal."
+ ],
+ [
+  "BJT: zonas de operación",
+  "¿Qué expresión rige la corriente de colector I_C en función de I_B en la zona activa?",
+  [
+   "I_C = β · I_B",
+   "I_C = I_B / β",
+   "I_C = I_B + V_{BE}",
+   "I_C = V_{CC} / R_C"
+  ],
+  "Recuerda el factor de amplificación de corriente β del BJT.",
+  "β es un multiplicador: la corriente de colector es β veces la de base.",
+  "En zona activa, I_C es el producto de la ganancia β por la corriente de base."
+ ],
+ [
+  "BJT: zonas de operación",
+  "En un BJT en conmutación, ¿qué valores de V_{CE} y de corriente caracterizan el corte y la saturación?",
+  [
+   "Corte: V_{CE} ≈ V_{CC} (I_C ≈ 0). Saturación: V_{CE} ≈ 0,2 V (I_{C(sat)} máxima).",
+   "Corte: V_{CE} ≈ 0 V. Saturación: V_{CE} ≈ V_{CC}.",
+   "Corte: V_{CE} = 0,7 V. Saturación: V_{CE} = −2 mV.",
+   "Corte: I_C = β·I_B. Saturación: I_C = 0."
+  ],
+  "Asocia interruptor abierto con la tensión máxima de la fuente e interruptor cerrado con la mínima.",
+  "Interruptor abierto: toda la tensión cae en el BJT. Interruptor cerrado: casi nada.",
+  "En corte actúa como circuito abierto (V_{CE} = V_{CC}); en saturación, como cerrado (V_{CE} ≈ 0,2 V)."
+ ],
+ [
+  "BJT: zonas de operación",
+  "Si la tensión V_{BE} de un BJT NPN de silicio es de 0,4 V, ¿en qué estado está el transistor?",
+  [
+   "En corte (apagado), porque V_{BE} es menor que el umbral de 0,7 V.",
+   "En saturación profunda.",
+   "En zona activa, amplificando con ganancia β.",
+   "En disrupción destructiva por sobretensión."
+  ],
+  "Compara 0,4 V con la tensión umbral de la unión PN de silicio.",
+  "0,4 V &lt; 0,7 V: la unión B-E no conduce y no hay corriente de base.",
+  "Sin alcanzar la tensión de codo, la base no inyecta portadores y el BJT permanece en corte."
+ ],
+ [
+  "BJT: zonas de operación",
+  "Un BJT activa un relé con una señal de un microcontrolador de 3,3 V. ¿Entre qué zonas debe conmutar?",
+  [
+   "Entre corte (apagado) y saturación (encendido).",
+   "Solo en zona activa.",
+   "En la región de avalancha.",
+   "Solo en el punto Q centrado."
+  ],
+  "Identifica los dos estados extremos que imitan un interruptor mecánico.",
+  "Un relé necesita ON/OFF franco: totalmente apagado o totalmente encendido.",
+  "Para conmutar de forma eficiente, el BJT alterna entre corte (circuito abierto) y saturación (circuito cerrado)."
+ ]
+];
+
+/* ================= LÓGICA ================= */
+var WEIGHTS=[1,0.5,0.25,0];        // puntaje según el intento en que acierta
+var LETTERS=["A","B","C","D"];
+var $=function(id){return document.getElementById(id);};
+var order=[], cur=0, attempts=[], wrongs=0, done=false, tStart=0, optMap=[];
+
+function fmt(s){
+  return s.replace(/([A-Za-zβ])_\{([^}]+)\}/g,"$1<sub>$2</sub>")
+          .replace(/([A-Za-zβ])_([A-Za-z0-9]+)/g,"$1<sub>$2</sub>");
+}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function show(id){["start","quiz","result"].forEach(function(s){$(s).classList.toggle("hidden",s!==id);});window.scrollTo(0,0);}
+
+function start(){
+  order=BANK.map(function(_,i){return i;});
+  if($("shuffleQ").checked) shuffle(order);
+  cur=0; attempts=[]; tStart=Date.now();
+  show("quiz"); render();
+}
+
+function render(){
+  var q=BANK[order[cur]];
+  done=false; wrongs=0;
+  $("topicChip").textContent=q[0];
+  $("qnum").textContent="Pregunta "+(cur+1)+" de "+BANK.length;
+  $("prog").style.width=(cur/BANK.length*100)+"%";
+  $("qtext").innerHTML=fmt(q[1]);
+  $("fb").innerHTML="";
+  $("btnNext").disabled=true;
+  $("btnNext").textContent=(cur===BANK.length-1)?"Ver resultados ▶":"Siguiente ▶";
+  optMap=shuffle([0,1,2,3]);
+  var box=$("opts"); box.innerHTML="";
+  optMap.forEach(function(orig,pos){
+    var b=document.createElement("button");
+    b.className="opt"; b.type="button";
+    b.innerHTML='<span class="k">'+LETTERS[pos]+'</span><span>'+fmt(q[2][orig])+'</span>';
+    b.onclick=function(){answer(b,orig);};
+    box.appendChild(b);
+  });
+  updStats();
+}
+
+function addBox(cls,title,html){
+  var d=document.createElement("div");
+  d.className="box pop "+cls;
+  d.innerHTML='<span class="t">'+title+'</span>'+html;
+  $("fb").appendChild(d);
+}
+
+function answer(btn,orig){
+  if(done||btn.disabled) return;
+  var q=BANK[order[cur]];
+  if(orig===0){
+    done=true;
+    btn.classList.add("right");
+    Array.prototype.forEach.call($("opts").children,function(b){b.disabled=true;});
+    attempts.push(wrongs+1);
+    var msg = wrongs===0 ? "¡Excelente! Correcta al primer intento." :
+              wrongs===1 ? "¡Bien! Correcta al segundo intento." :
+              "¡Correcto! Revisa la explicación para reforzar el concepto.";
+    addBox("okbox","✅ "+msg,"<div>"+fmt(q[5])+"</div>");
+    $("btnNext").disabled=false; $("btnNext").focus();
+    updStats();
+  }else{
+    wrongs++;
+    btn.classList.add("wrong","shake"); btn.disabled=true;
+    if(wrongs===1) addBox("hint1","💡 Pista 1",fmt(q[3]));
+    else if(wrongs===2) addBox("hint2","🔎 Pista 2",fmt(q[4]));
+    else addBox("hint3","👉 Solo queda una opción","Elige la opción que no has descartado y lee con atención la explicación.");
+  }
+}
+
+function points(){var s=0;attempts.forEach(function(a){s+=WEIGHTS[Math.min(a,4)-1];});return s;}
+function updStats(){
+  $("sFirst").textContent=attempts.filter(function(a){return a===1;}).length;
+  var p=points(); $("sPts").textContent=(Math.round(p*100)/100).toString().replace(".",",")+" / "+BANK.length;
+}
+
+function next(){
+  if(!done) return;
+  cur++;
+  if(cur<BANK.length) render(); else finish();
+}
+
+function finish(){
+  $("prog").style.width="100%";
+  var score=Math.round(points()/BANK.length*100);
+  show("result");
+  setTimeout(function(){$("ringArc").style.strokeDashoffset=402.1*(1-score/100);},80);
+  $("ringArc").setAttribute("stroke", score>=80?"#16a34a":score>=60?"#038BFF":"#dc2626");
+  $("finalScore").textContent=score;
+  var first=attempts.filter(function(a){return a===1;}).length;
+  if(score>=80){
+    $("passBanner").className="pass";
+    $("passBanner").innerHTML="<b>🎉 ¡HAS APROBADO, FELICIDADES! 🎉</b><span>Obtuviste "+score+" de 100 puntos (mínimo requerido: 80).</span>";
+  }else{
+    $("passBanner").className="nopass";
+    $("passBanner").innerHTML="<b>Aún no alcanzas el 80 %</b>Obtuviste "+score+" de 100 puntos. Repasa las preguntas indicadas abajo e inténtalo de nuevo.";
+  }
+  var v,t;
+  if(score>=90){v="¡Dominio sobresaliente! 🏆";t="Tienes un manejo sólido de diodos y transistores BJT.";}
+  else if(score>=80){v="¡Muy buen desempeño! 🎯";t="Repasa las preguntas marcadas abajo para cerrar los últimos detalles.";}
+  else if(score>=60){v="Cerca de aprobar 📘";t="Revisa los temas con menor porcentaje y vuelve a intentarlo.";}
+  else {v="Necesitas repasar 🔧";t="Vuelve al material de estudio, enfócate en los temas con menor desempeño e inténtalo de nuevo.";}
+  $("verdict").textContent=v; $("verdictTxt").textContent=t;
+
+  $("kFirst").textContent=attempts.filter(function(a){return a===1;}).length+" / "+BANK.length;
+  $("kErr").textContent=attempts.reduce(function(s,a){return s+a-1;},0);
+  $("kHard").textContent=attempts.filter(function(a){return a>=3;}).length;
+  var sec=Math.round((Date.now()-tStart)/1000);
+  $("kTime").textContent=Math.floor(sec/60)+":"+("0"+(sec%60)).slice(-2);
+
+  // Por tema
+  var agg={};
+  order.forEach(function(qi,k){
+    var tp=BANK[qi][0]; agg[tp]=agg[tp]||{p:0,n:0};
+    agg[tp].p+=WEIGHTS[Math.min(attempts[k],4)-1]; agg[tp].n++;
+  });
+  var th="";
+  [T1,T3,T4,T2].forEach(function(tp){
+    if(!agg[tp]) return;
+    var pc=Math.round(agg[tp].p/agg[tp].n*100);
+    var col=pc>=80?"#16a34a":pc>=60?"#038BFF":"#dc2626";
+    th+='<div class="topic"><div class="row"><span>'+tp+' <span style="color:#5b6675">('+agg[tp].n+' preguntas)</span></span><b>'+pc+' %</b></div><div class="bar"><i style="width:'+pc+'%;background:'+col+'"></i></div></div>';
+  });
+  $("topics").innerHTML=th;
+
+  // Repaso
+  var rl="";
+  order.forEach(function(qi,k){
+    var a=attempts[k]; if(a<2) return;
+    var q=BANK[qi];
+    rl+='<details><summary>'+fmt(q[1])+'<span class="tag '+(a>=3?"t3":"t2")+'">'+a+' intentos</span></summary>'+
+        '<p><b>Respuesta:</b> '+fmt(q[2][0])+'</p><p>'+fmt(q[5])+'</p></details>';
+  });
+  $("reviewList").innerHTML=rl||'<p class="sub">¡Respondiste todas al primer intento! No hay preguntas pendientes de repaso. 🎉</p>';
+
+  var nm=$("name").value.trim()||"Estudiante";
+  $("stamp").innerHTML="<b>"+nm.replace(/</g,"&lt;")+"</b> · Nota: <b>"+score+"/100</b> · "+new Date().toLocaleString("es-SV");
+}
+
+$("btnStart").onclick=start;
+$("btnNext").onclick=next;
+$("btnRetry").onclick=function(){show("start");};
+document.addEventListener("keydown",function(e){
+  if($("quiz").classList.contains("hidden")) return;
+  if(e.target && e.target.tagName==="INPUT") return;
+  var k=e.key.toUpperCase(), idx=-1;
+  if("ABCD".indexOf(k)>-1 && k.length===1) idx="ABCD".indexOf(k);
+  if("1234".indexOf(k)>-1 && k.length===1) idx="1234".indexOf(k);
+  if(idx>-1){var b=$("opts").children[idx]; if(b) b.click();}
+  if(e.key==="Enter" && done){e.preventDefault(); next();}
+});
+</script>
+</body>
+</html>
